@@ -20,6 +20,43 @@ def read_parquet_and_print_top(parquet_path):
 parquet_path = "./airline.parquet"
 read_parquet_and_print_top(parquet_path)
 
+def get_flights_each_year(airline):
+    month_map = {
+        1: 'January',
+        2: 'February',
+        3: 'March',
+        4: 'April',
+        5: 'May',
+        6: 'June',
+        7: 'July',
+        8: 'August',
+        9: 'September',
+        10: 'October',
+        11: 'November',
+        12: 'December'
+    }
+    flights_year = {}
+    flights_month = {}
+    years = airline.select('Year').distinct().collect()
+    years = [row.Year for row in years]
+
+    months = airline.select('Month').distinct().collect()
+    months = [row.Month for row in months]
+    # assign total and delayed for each month
+    for month in months:
+        total = airline.filter(airline.Month == month).count()
+        delayed = airline.filter(airline.Month == month).filter(airline.ArrDelay > 15).count()
+        month = month_map[month]
+        flights_month[month] = {'total': total, 'delayed': delayed}
+
+    # assign total and delayed for each year
+    for year in years:
+        total = airline.filter(airline.Year == year).count()
+        delayed = airline.filter(airline.Year == year).filter(airline.ArrDelay > 15).count()
+        flights_year[year] = {'total': total, 'delayed': delayed}
+    return flights_year, flights_month
+
+
 @app.route('/')
 def home():
     data = {}
@@ -40,6 +77,8 @@ def home():
     uniq_dest = [row.Dest for row in uniq_dest]
     data['uniq_dest'] = uniq_dest
 
+    flights_each_year,flights_each_month = get_flights_each_year(airline)
+
     air_time = airline.select('AirTime').distinct().collect()
     # replace all None values with mean
     air_time = [row.AirTime for row in air_time]
@@ -47,7 +86,10 @@ def home():
     mean_air_time = sum(air_time1) / len(air_time1)
     air_time = [mean_air_time if row is None else abs(row) for row in air_time] 
     
+
     data['air_time'] = air_time
+    data['flights_each_year'] = flights_each_year
+    data['flights_each_month'] = flights_each_month
     # Flights = [row.Flight for row in Flights]
     # get unique flight names
     # print(data)

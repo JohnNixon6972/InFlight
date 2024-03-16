@@ -28,7 +28,6 @@ const Dashboard = () => {
     })
       .then((response) => {
         const res = response.data;
-        console.log(res);
         setData(res);
       })
       .catch((error) => {
@@ -92,8 +91,8 @@ const Dashboard = () => {
       {/* Charts */}
 
       <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
-        <TotalSpent />
-        <WeeklyRevenue />
+        <TotalSpent flights_each_month = {data ? data.flights_each_month : data}/>
+        <WeeklyRevenue flights_each_year={data ? data.flights_each_year : data} />
       </div>
 
       {/* Tables & Charts */}
