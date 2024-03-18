@@ -1,19 +1,15 @@
 export const columnsDataDevelopment = [
   {
-    Header: "NAME",
-    accessor: "name",
+    Header: "YEAR",
+    accessor: "year",
   },
   {
-    Header: "TECH",
-    accessor: "tech",
+    Header: "TOTAL FLIGHTS",
+    accessor: "total_flights",
   },
   {
-    Header: "DATE",
-    accessor: "date",
-  },
-  {
-    Header: "PROGRESS",
-    accessor: "progress",
+    Header: "DELAYED FLIGHTS",
+    accessor: "delayed_flights",
   },
 ];
 
@@ -38,20 +34,16 @@ export const columnsDataCheck = [
 
 export const columnsDataColumns = [
   {
-    Header: "NAME",
-    accessor: "name",
+    Header: "REASON",
+    accessor: "reason",
   },
   {
-    Header: "PROGRESS",
-    accessor: "progress",
+  Header: "PERCENTAGE",
+    accessor: "percentage",
   },
   {
-    Header: "QUANTITY",
-    accessor: "quantity",
-  },
-  {
-    Header: "DATE",
-    accessor: "date",
+    Header: "FLIGHTS",
+    accessor: "count",
   },
 ];
 

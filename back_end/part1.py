@@ -1,4 +1,7 @@
-def display_flight_performance(airline, year):
+from pyspark.sql import SparkSession
+
+
+def get_flight_performance(airline, year):
     # Filter flights by the specified year
     flights_by_year = airline.filter(airline['Year'] == year)
 
@@ -10,33 +13,60 @@ def display_flight_performance(airline, year):
     early_flights = flights_by_year.filter(airline['DepDelay'] < 0).count()
     late_flights = flights_by_year.filter(airline['DepDelay'] > 0).count()
 
-    # Calculate the percentage of flights in each category
+    # Calculate the percentage of on-time, early, and late flights
     on_time_percentage = (on_time_flights / total_flights) * 100
     early_percentage = (early_flights / total_flights) * 100
     late_percentage = (late_flights / total_flights) * 100
+    # normalize to 100 without decimals
+    on_time_percentage = on_time_percentage / \
+        (on_time_percentage + early_percentage + late_percentage) * 100
+    early_percentage = early_percentage / \
+        (on_time_percentage + early_percentage + late_percentage) * 100
+    late_percentage = late_percentage / \
+        (on_time_percentage + early_percentage + late_percentage) * 100
 
-    print(f"Percentage of flights on time: {on_time_percentage:.2f}%")
-    print(f"Percentage of flights early: {early_percentage:.2f}%")
-    print(f"Percentage of flights late: {late_percentage:.2f}%")
+    on_time_percentage = round(on_time_percentage, 2)
+    early_percentage = round(early_percentage, 2)
+    late_percentage = round(late_percentage, 2)
+
+    result = [on_time_percentage, early_percentage, late_percentage]
+
+    return result
 
 # Example usage:
 # display_flight_performance(airline, 2010)
 
 
-def search_flights_by_year(airline, year):
-    # Filter flights by the specified year
-    flights_by_year = airline.filter(airline['Year'] == year)
+def search_flights_by_year(airline, years):
+    result = []
+    for year in years:
+        # Filter flights by the specified year
+        flights_by_year = airline.filter(airline['Year'] == year)
 
-    # Count the total number of flights
-    total_flights = flights_by_year.count()
+        # Count the total number of flights
+        total_flights = flights_by_year.count()
+        # Count the number of delayed flights
+        delayed_flights = flights_by_year.filter(
+            airline['ArrDelay'] > 15).count()
 
-    print(f"Total number of flights in {year}: {total_flights}")
+        if total_flights == 0:
+            continue
+
+        if delayed_flights == 0:
+            result.append({'total_flights': total_flights,
+                          'delayed_flights': 0, 'year': year})
+            continue
+
+        percent = (delayed_flights / total_flights) * 100
+        percent = round(percent, 2)
+        result.append({'total_flights': total_flights,
+                      'delayed_flights': percent, 'year': year})
+
+    return result
 
 
+def get_top_cancelled_reason(airline, year):
 
-
-
-def display_top_cancelled_reason(airline, year):
     # Filter flights by the specified year and cancelled flights
     cancelled_flights = airline.filter(
         (airline['Year'] == year) & (airline['Cancelled'] == 1))
@@ -46,14 +76,26 @@ def display_top_cancelled_reason(airline, year):
         'CancellationCode').count()
 
     # Find the most common cancellation reason
-    top_reason = cancellation_reasons.orderBy(
-        cancellation_reasons['count'].desc()).first()
+    top_reasons = cancellation_reasons.orderBy(
+        cancellation_reasons['count'].desc())
 
-    if top_reason:
-        print(
-            f"The top reason for cancelled flights in {year} was {top_reason['CancellationCode']}")
-    else:
-        print(f"No cancelled flights found for the year {year}")
+    # read code cvs file
+    code_spark = SparkSession.builder.appName("CancellationCode").getOrCreate()
+    code = code_spark.read.csv(
+        './SupplementaryCSVs/L_CANCELLATION.csv', header=True, inferSchema=True)
+
+    # based on the code, find the reason from the csv file
+    top_reasons = top_reasons.collect()
+    result = []
+    total_cancelled = cancelled_flights.count()
+    for i, reason in enumerate(top_reasons, start=1):
+        cancelled_percentage = (reason['count'] / total_cancelled) * 100
+        cancelled_percentage = round(cancelled_percentage, 2)
+        code_reason = code.filter(
+            code['Code'] == reason['CancellationCode']).collect()
+        result.append({'reason': code_reason[0]['Description'],
+                       'count': reason['count'], 'percentage': cancelled_percentage})
+    return result
 
 # Example usage:
 # display_top_cancelled_reason(airline, 2010)

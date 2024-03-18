@@ -1,15 +1,12 @@
 import MiniCalendar from "components/calendar/MiniCalendar";
 import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
 import TotalSpent from "views/admin/default/components/TotalSpent";
-import PieChartCard from "views/admin/default/components/PieChartCard";
 import { IoMdHome } from "react-icons/io";
 import { IoDocuments } from "react-icons/io5";
 import { MdBarChart, MdDashboard } from "react-icons/md";
 import axios from "axios";
 import { useState,useEffect } from "react";
-
 import { columnsDataCheck, columnsDataComplex } from "./variables/columnsData";
-
 import Widget from "components/widget/Widget";
 import CheckTable from "views/admin/default/components/CheckTable";
 import ComplexTable from "views/admin/default/components/ComplexTable";
@@ -110,7 +107,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 gap-5 rounded-[20px] md:grid-cols-2">
           <DailyTraffic />
-          <PieChartCard />
+          {/* <PieChartCard /> */}
         </div>
 
         {/* Complex Table , Task & Calendar */}
