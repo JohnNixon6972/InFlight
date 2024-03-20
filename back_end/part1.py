@@ -101,9 +101,9 @@ def get_top_cancelled_reason(airline, year):
 # display_top_cancelled_reason(airline, 2010)
 
 
-def display_top_airports(airline, years):
+def get_top_airports(airline, years):
     top_airports = []
-
+    result = {}
     for year in years:
         # Filter flights by the specified year and on-time departures
         on_time_flights = airline.filter(
@@ -115,13 +115,20 @@ def display_top_airports(airline, years):
         # Find the top 3 airports with most punctual take-offs
         top_airports_year = airport_counts.orderBy(
             airport_counts['count'].desc()).limit(3)
-        top_airports.extend(top_airports_year.collect())
 
-    print(
-        f"The top airports with most punctual take-offs for the years {years} are:")
-    for i, airport in enumerate(top_airports, start=1):
-        print(
-            f"{i}. {airport['Origin']}, Punctual Flights: {airport['count']}")
+        # get the OriginStateName and OriginCityName
+        top_airports = []
+        for i, airport in enumerate(top_airports_year.collect(), start=1):
+            top_airports.append(
+                {"airport": airport['Origin'], "count": airport['count'] ,"OriginStateName": airport['OriginStateName'], "OriginCityName": airport['OriginCityName']})
+        result[year] = top_airports
+    return result
+
+    # print(
+    #     f"The top airports with most punctual take-offs for the years {years} are:")
+    # for i, airport in enumerate(top_airports, start=1):
+    #     print(
+    #         f"{i}. {airport['Origin']}, Punctual Flights: {airport['count']}")
 
 # Example usage:
 # display_top_airports(airline, [1987, 1997, 2007, 2017])

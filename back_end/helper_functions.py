@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from part1 import search_flights_by_year,display_top_airports, display_worst_performing_airlines
+from part1 import search_flights_by_year, display_worst_performing_airlines
 from part2 import visualize_airport_performance, compare_airport_performance
 
 

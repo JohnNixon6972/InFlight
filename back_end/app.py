@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from pyspark.sql import SparkSession
-from part1 import search_flights_by_year, get_flight_performance, get_top_cancelled_reason, display_top_airports, display_worst_performing_airlines
+from part1 import search_flights_by_year, get_flight_performance, get_top_cancelled_reason, get_top_airports, display_worst_performing_airlines
 from part2 import visualize_airport_performance, compare_airport_performance
 from flask_cors import CORS
 from helper_functions import get_dashboard_data
@@ -59,6 +59,13 @@ def get_to_reasons_route():
     year = request_data.get('year', '')
     result = get_top_cancelled_reason(airline, year)
     return jsonify(result)
+
+@app.route('/get_top_airports')
+def get_top_airports_route():
+    global airline
+    years = [1987, 1997, 2007, 2017]
+    result = get_top_airports(airline,years)
+
 
 if __name__ == '__main__':
     app.run()
