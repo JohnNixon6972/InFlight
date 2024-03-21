@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from part1 import search_flights_by_year, display_worst_performing_airlines
+from part1 import search_flights_by_year,get_worst_performing_airlines
 from part2 import visualize_airport_performance, compare_airport_performance
 
 
@@ -59,7 +59,7 @@ def get_dashboard_data(airline):
     data_range = airline.select('Year').distinct().collect()
     data_range = [row.Year for row in data_range]
     data['data_range'] = data_range
-    data_worst = display_worst_performing_airlines(airline)
+    data_worst = get_worst_performing_airlines(airline)
     data['worst_performing_airlines'] = data_worst
 
     uniq_origin = airline.select('Origin').distinct().collect()

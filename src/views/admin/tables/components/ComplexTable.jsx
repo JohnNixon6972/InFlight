@@ -6,13 +6,39 @@ import {
   useTable,
 } from "react-table";
 import { MdCheckCircle, MdCancel, MdOutlineError } from "react-icons/md";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Progress from "components/progress";
+import axios from "axios";
+
 const ComplexTable = (props) => {
-  const { columnsData, tableData } = props;
+  const { columnsData } = props;
+  const [tableData, setTableData] = useState([]);
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
+
+  function getData() {
+    axios({
+      method: "GET", // Change method to POST since you're sending a body
+      url: "http://127.0.0.1:5000/get_top_airports",
+    })
+      .then((response) => {
+        const res = response.data;
+        console.log(res);
+        setTableData(res);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        }
+      });
+  }
+
+  useEffect(() => {
+    getData();
+  }, []);
 
   const tableInstance = useTable(
     {
@@ -32,7 +58,7 @@ const ComplexTable = (props) => {
     prepareRow,
     initialState,
   } = tableInstance;
-  initialState.pageSize = 5;
+  initialState.pageSize = 11;
 
   return (
     <Card extra={"w-full h-full p-4 sm:overflow-x-auto"}>
@@ -68,13 +94,13 @@ const ComplexTable = (props) => {
                 <tr {...row.getRowProps()} key={index}>
                   {row.cells.map((cell, index) => {
                     let data = "";
-                    if (cell.column.Header === "NAME") {
+                    if (cell.column.Header === "YEAR") {
                       data = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {cell.value}
                         </p>
                       );
-                    } else if (cell.column.Header === "STATUS") {
+                    } else if (cell.column.Header === "AIRPORT") {
                       data = (
                         <div className="flex items-center gap-2">
                           <div className={`rounded-full text-xl`}>
@@ -91,13 +117,13 @@ const ComplexTable = (props) => {
                           </p>
                         </div>
                       );
-                    } else if (cell.column.Header === "DATE") {
+                    } else if (cell.column.Header === "LOCATION") {
                       data = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {cell.value}
                         </p>
                       );
-                    } else if (cell.column.Header === "PROGRESS") {
+                    } else if (cell.column.Header === "PUNCTUAL TAKEOFF'S") {
                       data = <Progress width="w-[68px]" value={cell.value} />;
                     }
                     return (

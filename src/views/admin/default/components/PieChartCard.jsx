@@ -1,10 +1,9 @@
 import PieChart from "components/charts/PieChart";
 import { pieChartOptions } from "variables/charts";
 import Card from "components/card";
-import { Input, IconButton } from "@chakra-ui/react";
-import SearchIcon from "components/icons/SearchIcon";
 import { useState } from "react";
 import axios from "axios";
+import { FiSearch } from "react-icons/fi";
 
 const PieChartCard = () => {
   const [value, setValue] = useState("");
@@ -47,33 +46,22 @@ const PieChartCard = () => {
             Annual Flight Analysis
           </h4>
         </div>
-        <div class="flex items-center gap-4">
-          {/* max width */}
-          <div class="flex-4">
-            <Input
-              value={value}
-              onChange={handleChange}
-              placeholder="Enter Year"
-              size="lg"
-              borderRadius="10px"
-              width={"150px"}
-              color="gray.500"
-              bg="white"
-              border="none"
-              padding={4}
-              style={{ boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)" }}
-            />
-          </div>
-
-          <div class="flex items-center">
-            <IconButton
-              colorScheme="brand"
-              aria-label="Search database"
-              borderRadius="10px"
-              onClick={getData}
-              icon={<SearchIcon />}
-            />
-          </div>
+        <div className="flex h-full h-[40px] items-center rounded-full bg-lightPrimary text-navy-700 dark:bg-navy-900 dark:text-white xl:w-[225px]">
+          <p className="pl-3 pr-2 text-xl">
+            <FiSearch className="h-4 w-4 text-gray-400 dark:text-white" />
+          </p>
+          <input
+            type="text"
+            onChange={handleChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                getData();
+              }
+            }}
+            placeholder="Enter Year"
+            style={{ width: "225px" }}
+            class="block h-full w-full rounded-full bg-lightPrimary text-sm font-medium text-navy-700 outline-none placeholder:!text-gray-400 dark:bg-navy-900 dark:text-white dark:placeholder:!text-white sm:w-fit"
+          />
         </div>
       </div>
 
@@ -96,7 +84,9 @@ const PieChartCard = () => {
         <div className="flex flex-col items-center justify-center">
           <div className="flex items-center justify-center">
             <div className="h-2 w-2 rounded-full bg-[#6AD2FF]" />
-            <p className="ml-1 text-sm font-normal text-gray-600">Early takeoff</p>
+            <p className="ml-1 text-sm font-normal text-gray-600">
+              Early takeoff
+            </p>
           </div>
           <p className="mt-px text-xl font-bold text-navy-700 dark:text-white">
             {early}%

@@ -93,8 +93,12 @@ def get_top_cancelled_reason(airline, year):
         cancelled_percentage = round(cancelled_percentage, 2)
         code_reason = code.filter(
             code['Code'] == reason['CancellationCode']).collect()
-        result.append({'reason': code_reason[0]['Description'],
-                       'count': reason['count'], 'percentage': cancelled_percentage})
+        if len(code_reason) == 0:
+            result.append({'reason': 'Unknown',
+                           'count': reason['count'], 'percentage': cancelled_percentage})
+        else:
+            result.append({'reason': code_reason[0]['Description'],
+                           'count': reason['count'], 'percentage': cancelled_percentage})
     return result
 
 # Example usage:
@@ -103,25 +107,38 @@ def get_top_cancelled_reason(airline, year):
 
 def get_top_airports(airline, years):
     top_airports = []
-    result = {}
+    year_total_flights = {}
+    result = []
     for year in years:
         # Filter flights by the specified year and on-time departures
         on_time_flights = airline.filter(
             (airline['Year'] == year) & (airline['DepDelay'] <= 0))
 
-        # Group flights by originating airport and count occurrences
-        airport_counts = on_time_flights.groupBy('Origin').count()
-
-        # Find the top 3 airports with most punctual take-offs
+        # Group flights by originating airport and count occurrences also get the OriginStateName and OriginCityName
+        airport_counts = on_time_flights.groupBy(
+            'Origin', 'OriginStateName', 'OriginCityName').count()
         top_airports_year = airport_counts.orderBy(
             airport_counts['count'].desc()).limit(3)
+
+        for airport in top_airports_year.collect():
+            if airport['Origin'] in year_total_flights:
+                year_total_flights[airport['Origin']] += airport['count']
+            else:
+                year_total_flights[airport['Origin']] = airport['count']
 
         # get the OriginStateName and OriginCityName
         top_airports = []
         for i, airport in enumerate(top_airports_year.collect(), start=1):
+            city = airport['OriginCityName'].split(",")[
+                0]
+            location = city + \
+                ', ' + airport['OriginStateName']
+            percentage = (airport['count'] /
+                          year_total_flights[airport['Origin']]) * 100
+            percentage = round(percentage, 2)
             top_airports.append(
-                {"airport": airport['Origin'], "count": airport['count'] ,"OriginStateName": airport['OriginStateName'], "OriginCityName": airport['OriginCityName']})
-        result[year] = top_airports
+                {"airport": airport['Origin'], "count": percentage, "location": location, "year": year})
+        result += top_airports
     return result
 
     # print(
@@ -134,17 +151,21 @@ def get_top_airports(airline, years):
 # display_top_airports(airline, [1987, 1997, 2007, 2017])
 
 
-def display_worst_performing_airlines(airline):
+def get_worst_performing_airlines(airline):
     # Filter flights in the 20th century (years 1900-1999)
     century_flights = airline.filter(
         (airline['Year'] >= 1900) & (airline['Year'] <= 1999))
 
-    # Group flights by reporting airline and count occurrences
-    airline_counts = century_flights.groupBy('Reporting_Airline').count()
 
-    # Find the top 3 worst performing airlines (with highest average departure delays)
-    worst_performing_airlines = airline_counts.orderBy(
-        airline_counts['count'].desc()).limit(3)
+    # calculate average delay
+    average_delay = century_flights.groupBy('Reporting_Airline').avg('ArrDelay')
+    average_delay = average_delay.withColumnRenamed('avg(ArrDelay)', 'avg_delay')
+
+    # Filter flights with an arrival delay greater than average delay
+    worst_performing_airlines = century_flights.join(average_delay, on='Reporting_Airline')
+    worst_performing_airlines = worst_performing_airlines.filter(worst_performing_airlines['ArrDelay'] > worst_performing_airlines['avg_delay'])
+    worst_performing_airlines = worst_performing_airlines.groupBy('Reporting_Airline').count().orderBy('count', ascending=False).limit(3)
+
     worst_performing_airlines_list = worst_performing_airlines.collect()
 
     # print("The top three worst performing airlines in the 20th century are:")

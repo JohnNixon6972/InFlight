@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from pyspark.sql import SparkSession
-from part1 import search_flights_by_year, get_flight_performance, get_top_cancelled_reason, get_top_airports, display_worst_performing_airlines
+from part1 import search_flights_by_year, get_flight_performance, get_top_cancelled_reason, get_top_airports, get_worst_performing_airlines
 from part2 import visualize_airport_performance, compare_airport_performance
 from flask_cors import CORS
 from helper_functions import get_dashboard_data
@@ -19,7 +19,7 @@ def read_parquet_and_print_top(parquet_path):
     global default_data
     # Read Parquet files into a DataFrame
     airline = spark.read.parquet(parquet_path)
-    # default_data = get_dashboard_data(airline)
+    default_data = get_dashboard_data(airline)
 
 # Initialize Spark session and read Parquet file
 parquet_path = "./airline.parquet"
@@ -65,6 +65,13 @@ def get_top_airports_route():
     global airline
     years = [1987, 1997, 2007, 2017]
     result = get_top_airports(airline,years)
+    return jsonify(result)
+
+@app.route('/get_worst_performing_airlines')
+def get_worst_performing_airlines_route():
+    global airline
+    result = get_worst_performing_airlines(airline)
+    return jsonify(result)
 
 
 if __name__ == '__main__':

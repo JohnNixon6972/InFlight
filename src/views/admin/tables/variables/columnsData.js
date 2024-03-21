@@ -38,7 +38,7 @@ export const columnsDataColumns = [
     accessor: "reason",
   },
   {
-  Header: "PERCENTAGE",
+    Header: "PERCENTAGE",
     accessor: "percentage",
   },
   {
@@ -49,19 +49,19 @@ export const columnsDataColumns = [
 
 export const columnsDataComplex = [
   {
-    Header: "NAME",
-    accessor: "name",
+    Header: "YEAR",
+    accessor: "year",
   },
   {
-    Header: "STATUS",
-    accessor: "status",
+    Header: "AIRPORT",
+    accessor: "airport",
   },
   {
-    Header: "DATE",
-    accessor: "date",
+    Header: "LOCATION",
+    accessor: "location",
   },
   {
-    Header: "PROGRESS",
-    accessor: "progress",
+    Header: "PUNCTUAL TAKEOFF'S",
+    accessor: "count",
   },
 ];
