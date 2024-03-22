@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from part1 import search_flights_by_year,get_worst_performing_airlines
+from part1 import search_flights_by_year
 from part2 import visualize_airport_performance, compare_airport_performance
 
 
@@ -59,8 +59,6 @@ def get_dashboard_data(airline):
     data_range = airline.select('Year').distinct().collect()
     data_range = [row.Year for row in data_range]
     data['data_range'] = data_range
-    data_worst = get_worst_performing_airlines(airline)
-    data['worst_performing_airlines'] = data_worst
 
     uniq_origin = airline.select('Origin').distinct().collect()
     uniq_origin = [row.Origin for row in uniq_origin]
@@ -87,6 +85,28 @@ def get_dashboard_data(airline):
     # print(data)
     return data
 
+def get_states(airline):
+    states = airline.select('OriginStateName').distinct().collect()
+    states = [row.OriginStateName for row in states]
+    states.remove(None)
+
+    return states
+   
+
+def get_comparison(airline, states):
+    res = []
+    # for all the states get the total number of flights, delayed flights and cancelled flights
+    for state in states:
+        total = airline.filter(airline.OriginStateName == state).count()
+        delayed = airline.filter(airline.OriginStateName == state).filter(
+            airline.ArrDelay > 15).count()
+        cancelled = airline.filter(airline.OriginStateName == state).filter(
+            airline.Cancelled == 1).count()
+
+        res.append({'state': state, 'total': total, 'delayed': delayed, 'cancelled': cancelled})
+
+    return res
+
 
 def display_menu():
     print("Menu:")
@@ -100,32 +120,32 @@ def display_menu():
     print("8. Exit")
 
 
-def menu_selection(airline):
-    while True:
-        display_menu()
-        choice = input("Enter your choice: ")
+# def menu_selection(airline):
+#     while True:
+#         display_menu()
+#         choice = input("Enter your choice: ")
 
-        if choice == "1":
-            year = int(input("Enter the year to search flights: "))
-            search_flights_by_year(airline, year)
-        elif choice == "2":
-            year = int(input("Enter the year to display flight performance: "))
-            display_flight_performance(airline, year)
-        elif choice == "3":
-            year = int(
-                input("Enter the year to display top reason for cancelled flights: "))
-            display_top_cancelled_reason(airline, year)
-        elif choice == "4":
-            specific_years = input("Enter specific years separated by comma: ")
-            display_top_airports(airline, specific_years)
-        elif choice == "5":
-            display_worst_performing_airlines(airline)
-        elif choice == "6":
-            compare_airport_performance(airline, ['NY', 'CA', 'TX'])
-        elif choice == "7":
-            visualize_airport_performance(airline)
-        elif choice == "8":
-            print("Exiting...")
-            break
-        else:
-            print("Invalid choice. Please try again.")
+#         if choice == "1":
+#             year = int(input("Enter the year to search flights: "))
+#             search_flights_by_year(airline, year)
+#         elif choice == "2":
+#             year = int(input("Enter the year to display flight performance: "))
+#             display_flight_performance(airline, year)
+#         elif choice == "3":
+#             year = int(
+#                 input("Enter the year to display top reason for cancelled flights: "))
+#             display_top_cancelled_reason(airline, year)
+#         elif choice == "4":
+#             specific_years = input("Enter specific years separated by comma: ")
+#             display_top_airports(airline, specific_years)
+#         elif choice == "5":
+#             display_worst_performing_airlines(airline)
+#         elif choice == "6":
+#             compare_airport_performance(airline, ['NY', 'CA', 'TX'])
+#         elif choice == "7":
+#             visualize_airport_performance(airline)
+#         elif choice == "8":
+#             print("Exiting...")
+#             break
+#         else:
+#             print("Invalid choice. Please try again.")

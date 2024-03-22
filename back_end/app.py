@@ -3,7 +3,7 @@ from pyspark.sql import SparkSession
 from part1 import search_flights_by_year, get_flight_performance, get_top_cancelled_reason, get_top_airports, get_worst_performing_airlines
 from part2 import visualize_airport_performance, compare_airport_performance
 from flask_cors import CORS
-from helper_functions import get_dashboard_data
+from helper_functions import get_dashboard_data,get_states,get_comparison
 
 
 spark = SparkSession.builder.config("spark.driver.memory", "16g").appName("Airline Performance Analyzer").getOrCreate()
@@ -22,7 +22,7 @@ def read_parquet_and_print_top(parquet_path):
     default_data = get_dashboard_data(airline)
 
 # Initialize Spark session and read Parquet file
-parquet_path = "./airline.parquet"
+parquet_path = "./parquet_dataSets/airline"
 read_parquet_and_print_top(parquet_path)
 
 
@@ -60,6 +60,15 @@ def get_to_reasons_route():
     result = get_top_cancelled_reason(airline, year)
     return jsonify(result)
 
+@app.route('/get_comparison', methods=['POST'])
+def get_comparison_route():
+    global airline
+    request_data = request.get_json()  # Get JSON data from the request
+    print("request data ", request_data)
+    states = request_data.get('states', '')
+    result = get_comparison(airline, states)
+    return jsonify(result)
+
 @app.route('/get_top_airports')
 def get_top_airports_route():
     global airline
@@ -73,6 +82,11 @@ def get_worst_performing_airlines_route():
     result = get_worst_performing_airlines(airline)
     return jsonify(result)
 
+@app.route('/get_states')
+def get_states_route():
+    global airline
+    result = get_states(airline)
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run()

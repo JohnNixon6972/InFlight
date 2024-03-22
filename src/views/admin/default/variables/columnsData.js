@@ -19,20 +19,20 @@ export const columnsDataDevelopment = [
 
 export const columnsDataCheck = [
   {
-    Header: "NAME",
-    accessor: "name",
+    Header: "STATES",
+    accessor: "state",
   },
   {
-    Header: "PROGRESS",
-    accessor: "progress",
+    Header: "TOTAL FLIGHTS",
+    accessor: "total_flights",
   },
   {
-    Header: "QUANTITY",
-    accessor: "quantity",
+    Header: "TOTAL DELAYS",
+    accessor: "total_delays",
   },
   {
-    Header: "DATE",
-    accessor: "date",
+  Header: "TOTAL CANCELLATIONS",
+    accessor: "total_cancellations",
   },
 ];
 

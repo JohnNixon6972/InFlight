@@ -31,7 +31,6 @@ const Tables = () => {
     })
       .then((response) => {
         const res = response.data;
-        console.log(res);
         setData(res);
       })
       .catch((error) => {
@@ -47,32 +46,39 @@ const Tables = () => {
   }, []);
 
   useEffect(() => {
+    console.log(data);
     if (data) {
-      const dataArray = Object.entries(data).map(
-        ([year, { total, delayed }]) => ({ year, total, delayed })
-      );
+      const dataArray = data;
+      const airline = dataArray.map((data) => data.airline);
+      const delayedFlights = dataArray.map((data) => data.total_delays);
+      const totalFlights = dataArray.map((data) => data.total_flights);
+      const cancelledFlights = dataArray.map((data) => data.cancelled_flights);
 
-      // Sort the array based on total flights in descending order
-      dataArray.sort((a, b) => b.total - a.total);
-
-      // Select top 10 years with most total flights
-      const topTenYears = dataArray.slice(0, 10);
-
-      // Extracting total flights, years, and delayed flights into separate arrays
-      const totalFlights = topTenYears.map((entry) => entry.total);
-      const years = topTenYears.map((entry) => entry.year);
-      const delayedFlights = topTenYears.map((entry) => entry.delayed);
+      // console.log(airline);
+      // console.log(delayedFlights);
+      // console.log(totalFlights);
+      // console.log(cancelledFlights);
 
       const chartData = [
         {
-          name: "Total Flights",
-          data: totalFlights,
+          name: "Airline",
+          data: airline,
           color: "#6AD2Fa",
         },
         {
           name: "Delayed Flights",
           data: delayedFlights,
           color: "#5E37FF",
+        },
+        {
+          name: "Total Flights",
+          data: totalFlights,
+          color: "#6AD2FF",
+        },
+        {
+          name: "Cancelled Flights",
+          data: cancelledFlights,
+          color: "#E1E9F8",
         },
       ];
 
@@ -99,7 +105,7 @@ const Tables = () => {
           },
         },
         xaxis: {
-          categories: years,
+          categories: airline,
           show: false,
           labels: {
             show: true,
@@ -177,17 +183,13 @@ const Tables = () => {
         <DevelopmentTable columnsData={columnsDataDevelopment} />
         <PieChartCard />
       </div>
-      <div className="mt-5 grid h-full grid-cols-1 gap-5">
+      <div className="mt-5 grid h-full grid-cols-1 gap-5 md:grid-cols-2">
         <ColumnsTable columnsData={columnsDataColumns} />
-      </div>
-      <div className="mt-5 grid h-full grid-cols-1 gap-5">
-        <ComplexTable columnsData={columnsDataComplex} />
-      </div>
-      <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+
         <Card extra="flex flex-col bg-white w-full rounded-3xl py-6 px-2 text-center">
           <div className="mb-auto flex items-center justify-between px-6">
             <h2 className="text-lg font-bold text-navy-700 dark:text-white">
-              Top 10 Years with Most Flights
+              Worst Performing Airlines in the 20th Century
             </h2>
             <button className="!linear z-[1] flex items-center justify-center rounded-lg bg-lightPrimary p-2 text-brand-500 !transition !duration-200 hover:bg-gray-100 active:bg-gray-200 dark:bg-navy-700 dark:text-white dark:hover:bg-white/20 dark:active:bg-white/10">
               <MdBarChart className="h-6 w-6" />
@@ -212,6 +214,9 @@ const Tables = () => {
             </div>
           </div>
         </Card>
+      </div>
+      <div className="mt-5 grid h-full grid-cols-1 gap-5">
+        <ComplexTable columnsData={columnsDataComplex} />
       </div>
     </div>
   );

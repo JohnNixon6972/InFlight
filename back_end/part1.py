@@ -81,10 +81,10 @@ def get_top_cancelled_reason(airline, year):
 
     # read code cvs file
     code_spark = SparkSession.builder.appName("CancellationCode").getOrCreate()
-    code = code_spark.read.csv(
-        './SupplementaryCSVs/L_CANCELLATION.csv', header=True, inferSchema=True)
+    code = code_spark.read.parquet(
+        './parquet_dataSets/L_CANCELLATION')
 
-    # based on the code, find the reason from the csv file
+    # based on the code, find the reason from the parquet file
     top_reasons = top_reasons.collect()
     result = []
     total_cancelled = cancelled_flights.count()
@@ -156,23 +156,37 @@ def get_worst_performing_airlines(airline):
     century_flights = airline.filter(
         (airline['Year'] >= 1900) & (airline['Year'] <= 1999))
 
-
     # calculate average delay
-    average_delay = century_flights.groupBy('Reporting_Airline').avg('ArrDelay')
-    average_delay = average_delay.withColumnRenamed('avg(ArrDelay)', 'avg_delay')
+    average_delay = century_flights.groupBy(
+        'DOT_ID_Reporting_Airline').avg('ArrDelay')
+    average_delay = average_delay.withColumnRenamed(
+        'avg(ArrDelay)', 'avg_delay')
 
     # Filter flights with an arrival delay greater than average delay
-    worst_performing_airlines = century_flights.join(average_delay, on='Reporting_Airline')
-    worst_performing_airlines = worst_performing_airlines.filter(worst_performing_airlines['ArrDelay'] > worst_performing_airlines['avg_delay'])
-    worst_performing_airlines = worst_performing_airlines.groupBy('Reporting_Airline').count().orderBy('count', ascending=False).limit(3)
+    worst_performing_airlines = century_flights.join(
+        average_delay, on='DOT_ID_Reporting_Airline')
+    worst_performing_airlines = worst_performing_airlines.filter(
+        worst_performing_airlines['ArrDelay'] > worst_performing_airlines['avg_delay'])
+    worst_performing_airlines = worst_performing_airlines.groupBy(
+        'DOT_ID_Reporting_Airline').count().orderBy('count', ascending=False).limit(3)
 
     worst_performing_airlines_list = worst_performing_airlines.collect()
 
     # print("The top three worst performing airlines in the 20th century are:")
     data = []
+
+    temp = SparkSession.builder.appName("Temp").getOrCreate()
+    dot_ids = temp.read.parquet(
+        "./parquet_dataSets/L_AIRLINE_ID")
+
     for i, airline in enumerate(worst_performing_airlines_list, start=1):
-        # print(
-        #     f"{i}. {airline['Reporting_Airline']}, Total Delays: {airline['count']}")
+        airline_name = dot_ids.filter(
+            dot_ids['Code'] == airline['DOT_ID_Reporting_Airline']).collect()[0]
+        airline_name = airline_name['Description'].split(':')[0].strip()
+        total_flights = century_flights.filter(
+            century_flights['DOT_ID_Reporting_Airline'] == airline['DOT_ID_Reporting_Airline']).count()
+        cancel_flights = century_flights.filter(
+            century_flights['Cancelled'] == 1).count()
         data.append(
-            {"airline": airline['Reporting_Airline'], "total_delays": airline['count']})
+            {"airline": airline_name, "total_delays": airline['count'], "total_flights": total_flights, "cancelled_flights": cancel_flights})
     return data
