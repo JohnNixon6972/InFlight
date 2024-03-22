@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from pyspark.sql import SparkSession
 from part1 import search_flights_by_year, get_flight_performance, get_top_cancelled_reason, get_top_airports, get_worst_performing_airlines
-from part2 import visualize_airport_performance, compare_airport_performance
 from flask_cors import CORS
 from helper_functions import get_dashboard_data,get_states,get_comparison
 
